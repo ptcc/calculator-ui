@@ -24,39 +24,43 @@ const parseOperator = (operator, str) =>
 const parseNumber = (str) => ({ type: "number", value: str });
 
 const changeLastSign = (input: string) => {
-  let newInput = input;
-  if (input.match(/^-\d*\.?\d*$/)) {
-    newInput = input.slice(1);
-  } else if (input.match(/^\d*\.?\d*$/)) {
-    newInput = "-" + input;
-  } else {
-    const parts = input.split(/([-+*/])/).filter((part) => part !== "");
-    const lastPart = parts.pop();
-    if (lastPart === "+") newInput = parts.join("") + "-";
-    else if (["*", "/"].includes(lastPart)) {
-      newInput = parts.join("") + lastPart + "-";
-    } else {
-      const lastOp = parts.pop();
-      if (lastPart === "-") {
-        if (["*", "/", "+"].includes(lastOp)) {
-          newInput = parts.join("") + lastOp;
-        } else {
-          newInput = parts.join("") + lastOp + "+";
-        }
-      } else if (lastOp === "+") {
-        newInput = parts.join("") + "-" + lastPart;
-      } else if (lastOp === "-") {
-        if (["*", "/", "+"].includes(parts[parts.length - 1])) {
-          newInput = parts.join("") + lastPart;
-        } else {
-          newInput = parts.join("") + "+" + lastPart;
-        }
-      } else if (["*", "/"].includes(lastOp)) {
-        newInput = parts.join("") + lastOp + "-" + lastPart;
-      }
-    }
+  // negative number
+  if (input.match(/^-\d*\.?\d*$/)) return input.slice(1);
+  //positive number
+  if (input.match(/^\d*\.?\d*$/)) return "-" + input;
+
+  const parts = input.split(/([-+*/])/).filter((part) => part !== "");
+  const lastPart = parts.pop();
+
+  //ending in +
+  if (lastPart === "+") return parts.join("") + "-";
+  //ending in * or /
+  if (["*", "/"].includes(lastPart)) return parts.join("") + lastPart + "-";
+
+  const lastOp = parts.pop();
+  //ending in -
+  if (lastPart === "-") {
+    //ending in - with an operator before
+    if (["*", "/", "+", '-'].includes(lastOp)) return parts.join("") + lastOp;
+    //ending in - with a number before
+    return parts.join("") + lastOp + "+";
   }
-  return newInput;
+  //ending in a number
+  //with a + before
+  if (lastOp === "+") return parts.join("") + "-" + lastPart;
+  //with a - before
+  if (lastOp === "-") {
+    //the - is preceeded by an operator
+    if (["*", "/", "+", '-'].includes(parts[parts.length - 1]))
+      return parts.join("") + lastPart;
+    //the - is preceded by a number
+    return parts.join("") + "+" + lastPart;
+  }
+  //with a * or a / before
+  if (["*", "/"].includes(lastOp))
+    return parts.join("") + lastOp + "-" + lastPart;
+
+  return input;
 };
 
 export { parse, changeLastSign };
